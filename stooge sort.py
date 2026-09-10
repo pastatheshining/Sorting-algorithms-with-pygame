@@ -10,13 +10,13 @@ swaps=0
 screen = pygame.display.set_mode((1440, 800))
 start_time = pygame.time.get_ticks()
 # You can now change this to higher numbers (e.g., 20 or 50)!
-how_many = 128
+how_many = 256
 length=how_many
 my_list=[]
 for i in range(how_many):
     item=random.randint(1,how_many)
     while item in my_list:
-        item=random.randint(1,how_many)
+            item=random.randint(1,how_many)
     my_list.append(item)
 color = pygame.Color(0, 0, 0)
 clock = pygame.time.Clock()
@@ -70,10 +70,11 @@ while running:
         running = False
     pygame.display.flip()
     clock.tick(120) 
-    try:
-        next(stooge_generator)
-    except StopIteration:
-        pass
+    for idkvar in range(20):
+        try:
+            next(stooge_generator)
+        except StopIteration:
+            pass
 print(swaps)
 print(time.perf_counter() - start_clock)
 pygame.quit()

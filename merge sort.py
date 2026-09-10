@@ -9,13 +9,12 @@ swaps=0
 merging=True
 screen = pygame.display.set_mode((1440, 800))
 start_time = pygame.time.get_ticks()
-how_many = 1024
+how_many = 2048
 pointer=0
 my_list=[]
 aux=[]
 pointera=0
 pointerb=how_many//2
-item=1
 for i in range(how_many):
     item=random.randint(1,how_many)
     while item in my_list:

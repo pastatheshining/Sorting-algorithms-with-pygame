@@ -6,7 +6,8 @@ pygame.font.init()
 pygame.init()
 screen = pygame.display.set_mode((1440, 800))
 start_time = pygame.time.get_ticks()
-how_many = 8
+how_many = 256
+pointer=1
 sorting=True
 my_list=[]
 for i in range(how_many):
@@ -37,11 +38,15 @@ while running:
             running = False
     pygame.display.flip()
     clock.tick(120)
-    for idkvar in range(200):
+    for idkvar in range(20):
         if sorting:
-            random.shuffle(my_list)
-            if my_list == sorted(my_list):
-                sorting = False
+            if pointer>=how_many:
+                sorting=False
+                break
+            if my_list[pointer-1]>my_list[pointer]:
+                my_list[pointer]=my_list[pointer]+1
+            else:
+                pointer+=1
 print(time.perf_counter() - start_clock)
 pygame.quit()
 sys.exit() 

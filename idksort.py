@@ -2,22 +2,28 @@ import pygame
 import sys
 import random
 import time
-import math
+
 pygame.font.init()
 pygame.init()
+
 rounds = 0
 swaps = 0
+merging = True
 screen = pygame.display.set_mode((1440, 800))
 start_time = pygame.time.get_ticks()
-how_many = 2048
+how_many = 48
+pointer = 0
 my_list = []
+aux = []
+pointera = 0
+pointerb = how_many // 2
+
 for i in range(how_many):
     item = random.randint(1, how_many)
     while item in my_list:
         item = random.randint(1, how_many)
     my_list.append(item)
-pointera = 0
-pointerb = 0
+
 color = pygame.Color(0, 0, 0)
 clock = pygame.time.Clock()
 delta_time = 0.1
@@ -26,27 +32,25 @@ total_w = 1300
 bar_w = total_w / how_many
 x_offset = (1440 - total_w) / 2
 font_style = pygame.font.SysFont("Arial", 28)
-def quicksort_ll_generator(low, high):
-    global pointera, pointerb, swaps
-    if low >= high:
-        return
-    pivot = my_list[high]
-    pointera = low
-    pointerb = low
-    while pointerb < high:
-        if (my_list[pointerb] < pivot):
-            my_list[pointera], my_list[pointerb] = my_list[pointerb], my_list[pointera]
-            swaps += 1
-            pointera += 1
-        pointerb += 1
-        yield
-    my_list[pointera], my_list[high] = my_list[high], my_list[pointera]
-    swaps += 1
-    yield
-    yield from quicksort_ll_generator(low, pointera - 1)
-    yield from quicksort_ll_generator(pointera + 1, high)
-sort_pipeline = quicksort_ll_generator(0, how_many - 1)
 start_clock = time.perf_counter()
+
+def merge(start, end):
+    global swaps, pointera, pointerb
+    if start >= end:
+        return
+    mid = (start + end) // 2
+    yield from merge(start, mid)
+    yield from merge(mid + 1, end)
+    pointera = mid
+    pointerb = end
+    if my_list[mid] > my_list[end]:
+        my_list[mid], my_list[end] = my_list[end], my_list[mid]
+        swaps += 1
+    yield
+    yield from merge(start, end - 1)
+sorter = merge(0, how_many - 1)
+sorting_finished = False
+
 while running:
     screen.fill((0, 0, 0))
     text_surface = font_style.render(f"Total Swaps: {swaps}", True, (255, 255, 255))
@@ -65,13 +69,15 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    for idkvar in range(20):
-        try:
-            next(sort_pipeline)
-        except StopIteration:
-            pass
-    if my_list == sorted(my_list):
-        running = False
+    if not sorting_finished:
+        for idkvar in range(20):
+            try:
+                next(sorter)
+            except StopIteration:
+                sorting_finished = True
+                pointera = -1
+                pointerb = -1
+                break
     pygame.display.flip()
     clock.tick(120)
 print(swaps)

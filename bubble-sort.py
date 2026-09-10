@@ -11,6 +11,7 @@ screen = pygame.display.set_mode((1440, 800))
 start_time = pygame.time.get_ticks()
 how_many = 256
 my_list=[]
+item=how_many
 for i in range(how_many):
     item=random.randint(1,how_many)
     while item in my_list:
