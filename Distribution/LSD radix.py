@@ -3,6 +3,13 @@ import sys
 import random
 import time
 import math
+import pyaudio 
+my_rate=48000
+pit=500
+length=0.01
+volume=0.6
+aud=pyaudio.PyAudio()
+stream=aud.open(format=pyaudio.paInt16, channels=1, rate=my_rate, output=True,)
 pygame.font.init()
 pygame.init()
 rounds=0
@@ -12,6 +19,17 @@ start_time = pygame.time.get_ticks()
 how_many = 2048
 bucketing=True
 my_list=[]
+def play_swap_sound(val1):
+    bytes_audio = bytearray()
+    total_samples = int(my_rate * length)
+    fade_samples = int(total_samples * 0.25)
+    for n in range(total_samples):
+        point = math.sin(2 * math.pi * (((val1 / how_many) * 500) + 150) * (n / my_rate))
+        if n > total_samples - fade_samples:
+            point *= ((total_samples - n) / fade_samples)
+        vol_int = int(point * 32767 * volume)
+        bytes_audio.extend(vol_int.to_bytes(2, byteorder="little", signed=True))
+    stream.write(bytes(bytes_audio))
 for i in range(how_many):
     item=random.randint(0,how_many-1)
     while item in my_list:
@@ -98,8 +116,14 @@ while running:
                 buck1.clear()
                 buck2.clear()
                 buck3.clear()
+    try:
+        play_swap_sound(my_list[i])
+    except IndexError:
+        print("Error")
 print(swaps)
 print(time.perf_counter() - start_clock)
+stream.close()
+aud.terminate()
 pygame.quit()
 sys.exit() 
 

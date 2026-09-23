@@ -3,13 +3,14 @@ import sys
 import random
 import time
 import math
+import pyaudio 
 pygame.font.init()
 pygame.init()
 swaps = 0
 current2 = 0
 screen = pygame.display.set_mode((1440, 800))
 start_time = pygame.time.get_ticks()
-how_many = 2048
+how_many = 3072
 heap_length = how_many
 heap_building = True
 where_at = how_many // 2 + 1

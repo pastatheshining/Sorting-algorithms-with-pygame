@@ -2,6 +2,14 @@ import pygame
 import sys
 import random
 import time
+from math import sin, pi
+import pyaudio 
+my_rate=48000
+pit=500
+length=0.02
+volume=1
+aud=pyaudio.PyAudio()
+stream=aud.open(format=pyaudio.paInt16, channels=1, rate=my_rate, output=True,)
 pygame.font.init()
 pygame.init()
 pointer=0
@@ -9,10 +17,28 @@ rounds=0
 swaps=0
 screen = pygame.display.set_mode((1440, 800))
 start_time = pygame.time.get_ticks()
-# You can now change this to higher numbers (e.g., 20 or 50)!
 how_many = 256
 length=how_many
 my_list=[]
+def play_swap_sound(val1, val2):
+    bytes_audio = bytearray()
+    total_samples = int(my_rate * length)
+    fade_samples = int(total_samples * 0.25)
+    for n in range(total_samples):
+        point = sin(2 * pi * (((val1 / how_many) * 500) + 150) * (n / my_rate))
+        if n > total_samples - fade_samples:
+            point *= ((total_samples - n) / fade_samples)
+        vol_int = int(point * 32767 * volume)
+        bytes_audio.extend(vol_int.to_bytes(2, byteorder="little", signed=True))
+    stream.write(bytes(bytes_audio))
+    bytes_audio2 = bytearray()
+    for n in range(total_samples):
+        point = sin(2 * pi * (((val2 / how_many) * 500) + 150) * (n / my_rate))
+        if n > total_samples - fade_samples:
+            point *= ((total_samples - n) / fade_samples)
+        vol_int = int(point * 32767 * volume)
+        bytes_audio2.extend(vol_int.to_bytes(2, byteorder="little", signed=True))
+    stream.write(bytes(bytes_audio2))
 for i in range(how_many):
     item=random.randint(1,how_many)
     while item in my_list:
@@ -31,25 +57,17 @@ start_clock = time.perf_counter()
 # RECURSIVE STOOGE SORT GENERATOR
 def stooge_sort(alist, l, h):
     global swaps
-
-    # Base case
     if l >= h:
         return
-    # If first element is smaller than last, swap them
     if alist[l] > alist[h]:
         alist[l], alist[h] = alist[h], alist[l]
         swaps += 1
-        yield alist  # Yield here to show the swap visually
-    # If there are more than 2 elements in the current subarray
+        yield alist 
     if h - l + 1 > 2:
-        t = (h - l + 1) // 3
-        # Recursively sort initial 2/3 elements
+        t = int((h - l + 1) // 3)
         yield from stooge_sort(alist, l, h - t)
-        # Recursively sort last 2/3 elements
         yield from stooge_sort(alist, l + t, h)
-        # Recursively sort initial 2/3 elements again
         yield from stooge_sort(alist, l, h - t)
-# Initialize the recursive generator tracking indices 0 to length-1
 stooge_generator = stooge_sort(my_list, 0, how_many - 1)
 while running:
     screen.fill((0, 0, 0))
@@ -77,5 +95,7 @@ while running:
             pass
 print(swaps)
 print(time.perf_counter() - start_clock)
+stream.close()
+aud.terminate()
 pygame.quit()
 sys.exit()

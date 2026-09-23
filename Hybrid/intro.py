@@ -3,6 +3,7 @@ import sys
 import random
 import time
 import math
+import pyaudio 
 recursion_level = 1
 pygame.font.init()
 pygame.init()
@@ -11,7 +12,7 @@ swaps = 0
 current2 = 0
 screen = pygame.display.set_mode((1440, 800))
 start_time = pygame.time.get_ticks()
-how_many = 2048
+how_many = 3072
 heap_length = how_many
 my_list = []
 for i in range(how_many):
@@ -41,7 +42,7 @@ def insertionsort_slice_generator(low, high):
             j -= 1
             yield
 def heapsort_slice_generator(low, high):
-    global swaps
+    global swaps, current2
     n = high - low + 1
     if n <= 1:
         return
@@ -103,30 +104,20 @@ def quicksort_generator(low, high):
     if recursion_level > 2 * math.log(how_many, 2):
         yield from heapsort_slice_generator(low, high)
         return
-    mid_idx = (low + high) // 2
-    pivot = my_list[mid_idx]
+    pivot = my_list[high]
     pointera = low
-    pointerb = high
-    mova = True
-    while pointera <= pointerb:
-        if mova:
-            if my_list[pointera] > pivot:
-                mova = False
-            else:
-                pointera += 1
+    for pointerb in range(low, high):
+        if my_list[pointerb] < pivot:
+            my_list[pointera], my_list[pointerb] = my_list[pointerb], my_list[pointera]
+            swaps += 1
+            pointera += 1
             yield
-        else:
-            if my_list[pointerb] < pivot:
-                my_list[pointera], my_list[pointerb] = my_list[pointerb], my_list[pointera]
-                swaps += 1
-                mova = True
-                pointerb -= 1
-            else:
-                pointerb -= 1
-            yield       
-    recursion_level += 1
-    yield from quicksort_generator(low, pointerb)
-    yield from quicksort_generator(pointera, high)
+    my_list[pointera], my_list[high] = my_list[high], my_list[pointera]
+    swaps += 1
+    recursion_level+=1
+    yield
+    yield from quicksort_generator(low, pointera - 1)
+    yield from quicksort_generator(pointera + 1, high)
     recursion_level -= 1
 sort_pipeline = quicksort_generator(0, how_many - 1)
 start_clock = time.perf_counter()
